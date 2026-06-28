@@ -10,3 +10,14 @@ Maintain version control and project history.
 
 Date:
 28 June 2026
+
+## Decision #2
+
+Decision:
+StudentOS will be developed incrementally through versioned releases (v0.1, v0.2, v0.3, etc.).
+
+Reason:
+Reduce complexity, maintain focus, and build a strong foundation before adding advanced features.
+
+Date:
+29 June 2026
