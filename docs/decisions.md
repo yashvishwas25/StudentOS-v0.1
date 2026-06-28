@@ -21,3 +21,14 @@ Reduce complexity, maintain focus, and build a strong foundation before adding a
 
 Date:
 29 June 2026
+
+## Decision #3
+
+Decision:
+StudentOS v0.1 will use a Frontend + Python Backend architecture.
+
+Reason:
+This approach is achievable with current skills while providing a realistic application structure and allowing future expansion to database-driven versions.
+
+Date:
+29 June 2026
