@@ -1,4 +1,17 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
+from app.utils.exceptions import AppError
+
+from app.utils.responses import (
+    success_response,
+    error_response
+)
+
+from app.utils.constants import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED
+)
 
 from app.services.auth_service import (
     login_user,
@@ -9,54 +22,69 @@ from app.utils.validators import validate_auth_data
 
 auth_bp = Blueprint("auth", __name__)
 
-
 @auth_bp.route("/login", methods=["POST"])
 def login():
 
     data = request.json
 
     if not data:
-        return jsonify({
-            "error": "Request body is required"
-        }), 400
+        raise AppError(
+        "Request body is required",
+        HTTP_400_BAD_REQUEST
+    )
 
     valid, cleaned_data, error = validate_auth_data(data)
 
     if not valid:
-        return jsonify(error), 400
+        raise AppError(
+        error,
+        HTTP_400_BAD_REQUEST
+    ) 
 
     username = cleaned_data["username"]
     password = cleaned_data["password"]
 
-    result, status_code = login_user(
+    success, message = login_user(
         username,
         password
     )
 
-    return jsonify(result), status_code
+    if not success:
+        raise AppError(
+        message,
+        HTTP_401_UNAUTHORIZED
+    )
+
+    return success_response(message)
 
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
 
-    data = request.json
-
-    if not data:
-        return jsonify({
-            "error": "Request body is required"
-        }), 400
-
-    valid, cleaned_data, error = validate_auth_data(data)
+    valid, cleaned_data, error = validate_auth_data(request.json)
 
     if not valid:
-        return jsonify(error), 400
-
+        raise AppError(
+        error,
+        HTTP_400_BAD_REQUEST
+    )
+    
     username = cleaned_data["username"]
     password = cleaned_data["password"]
-
-    result, status_code = register_user(
+    
+    success, message = register_user(
         username,
         password
     )
 
-    return jsonify(result), status_code
+    if not success:
+        raise AppError(
+        message,
+        HTTP_400_BAD_REQUEST
+    )
+
+    return success_response(
+        message,
+        status_code=HTTP_201_CREATED
+    )
+ 
