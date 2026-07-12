@@ -3,6 +3,9 @@ from flask import Blueprint, jsonify, request
 from app.utils.exceptions import AppError
 from app.utils.constants import HTTP_400_BAD_REQUEST
 
+from flask import current_app
+from app.utils.responses import success_response
+
 health_bp = Blueprint("health", __name__)
 
 
@@ -102,13 +105,6 @@ def login():
         "error": "Invalid credentials"
     }), 401
 
-
-@health_bp.route("/api/error-test")
-def error_test():
-    raise AppError(
-        "This is a custom exception test",
-        HTTP_400_BAD_REQUEST
-    )
     
 @health_bp.route("/api/error-test")
 def error_test():
@@ -116,3 +112,10 @@ def error_test():
         "This is a custom exception test",
         HTTP_400_BAD_REQUEST
     )
+    
+@health_bp.route("/config")
+def config_info():
+    return success_response({
+        "app_name": current_app.config["APP_NAME"],
+        "debug": current_app.config["DEBUG"]
+    })

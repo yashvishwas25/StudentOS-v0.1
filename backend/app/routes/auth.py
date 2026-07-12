@@ -19,12 +19,16 @@ from app.services.auth_service import (
 )
 
 from app.utils.validators import validate_auth_data
+from app.utils.logger import logger
+
 
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
 
+    logger.info("Login API called")
+    
     data = request.json
 
     if not data:
