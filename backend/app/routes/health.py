@@ -117,5 +117,5 @@ def error_test():
 def config_info():
     return success_response({
         "app_name": current_app.config["APP_NAME"],
-        "debug": current_app.config["DEBUG"]
+        "debug": current_app.config["DEBUG"],
     })

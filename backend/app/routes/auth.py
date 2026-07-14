@@ -1,6 +1,11 @@
 from flask import Blueprint, request
 from app.utils.exceptions import AppError
 
+from flask_jwt_extended import (
+    jwt_required,
+    get_jwt_identity
+)
+
 from app.utils.responses import (
     success_response,
     error_response
@@ -28,38 +33,43 @@ auth_bp = Blueprint("auth", __name__)
 def login():
 
     logger.info("Login API called")
-    
+
     data = request.json
 
     if not data:
         raise AppError(
-        "Request body is required",
-        HTTP_400_BAD_REQUEST
-    )
+            "Request body is required",
+            HTTP_400_BAD_REQUEST
+        )
 
     valid, cleaned_data, error = validate_auth_data(data)
 
     if not valid:
         raise AppError(
-        error,
-        HTTP_400_BAD_REQUEST
-    ) 
+            error,
+            HTTP_400_BAD_REQUEST
+        )
 
     username = cleaned_data["username"]
     password = cleaned_data["password"]
 
-    success, message = login_user(
+    success, message, token = login_user(
         username,
         password
     )
 
     if not success:
         raise AppError(
-        message,
-        HTTP_401_UNAUTHORIZED
-    )
+            message,
+            HTTP_401_UNAUTHORIZED
+        )
 
-    return success_response(message)
+    return success_response(
+        message,
+        data={
+            "token": token
+        }
+    )
 
 
 @auth_bp.route("/register", methods=["POST"])
@@ -92,3 +102,16 @@ def register():
         status_code=HTTP_201_CREATED
     )
  
+ 
+@auth_bp.route("/profile", methods=["GET"])
+@jwt_required()
+def profile():
+
+    current_user = get_jwt_identity()
+
+    return success_response(
+        "Profile fetched successfully",
+        data={
+            "username": current_user
+        }
+    )

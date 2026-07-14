@@ -7,6 +7,7 @@ from app.config import Config
 from app.database.db import db
 from app.utils.logger import logger
 from app.models.user import User
+from app.utils.jwt_manager import jwt
 
 load_dotenv()
 
@@ -16,6 +17,7 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    jwt.init_app(app)
     with app.app_context():
         db.create_all()
         logger.info("Database tables created successfully")

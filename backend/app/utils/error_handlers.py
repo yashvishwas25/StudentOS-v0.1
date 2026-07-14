@@ -13,8 +13,10 @@ def register_error_handlers(app):
         )
 
     @app.errorhandler(Exception)
-    def handle_unexpected_error(error):
+    def handle_generic_error(error):
+        print(error)
+
         return error_response(
             "Internal Server Error",
             HTTP_500_INTERNAL_SERVER_ERROR
-        )
+    )
