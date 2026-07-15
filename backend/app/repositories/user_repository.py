@@ -19,3 +19,7 @@ class UserRepository:
         db.session.commit()
 
         return user
+    
+    @staticmethod
+    def get_by_id(user_id):
+        return User.query.get(user_id)
