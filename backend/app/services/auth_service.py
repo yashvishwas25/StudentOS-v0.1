@@ -27,7 +27,7 @@ def login_user(username, password):
         )
 
         token = create_access_token(
-            identity=user.username
+            identity=str(user.id)
         )
 
         return True, "Login successful", token

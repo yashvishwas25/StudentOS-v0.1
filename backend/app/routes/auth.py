@@ -107,11 +107,16 @@ def register():
 @jwt_required()
 def profile():
 
-    current_user = get_jwt_identity()
+    user_id = int(get_jwt_identity())
+
+    from app.repositories.user_repository import UserRepository
+
+    user = UserRepository.get_by_id(user_id)
 
     return success_response(
         "Profile fetched successfully",
         data={
-            "username": current_user
+            "id": user.id,
+            "username": user.username
         }
     )
