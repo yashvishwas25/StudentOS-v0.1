@@ -7,6 +7,8 @@ from app.config import Config
 from app.database.db import db, migrate
 from app.utils.logger import logger
 from app.utils.jwt_manager import jwt
+from app.models.user import User
+from app.models.project import Project
 
 load_dotenv()
 

@@ -1,5 +1,6 @@
 from app.database.db import db
 
+
 class User(db.Model):
     __tablename__ = "users"
 
@@ -17,4 +18,10 @@ class User(db.Model):
     password = db.Column(
         db.String(255),
         nullable=False
+    )
+
+    projects = db.relationship(
+        "Project",
+        backref="owner",
+        lazy=True
     )
