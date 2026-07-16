@@ -27,3 +27,23 @@ def get_user_projects(user_id):
         True,
         projects
     )
+
+def get_project(project_id):
+
+    project = ProjectRepository.get_project_by_id(
+        project_id
+    )
+
+    return project
+
+
+def delete_project(project):
+
+    ProjectRepository.delete_project(
+        project
+    )
+
+    return (
+        True,
+        "Project deleted successfully"
+    )

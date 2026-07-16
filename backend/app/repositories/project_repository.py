@@ -23,3 +23,14 @@ class ProjectRepository:
         return Project.query.filter_by(
             user_id=user_id
         ).all()
+        
+    @staticmethod
+    def get_project_by_id(project_id):
+
+        return Project.query.get(project_id)
+
+    @staticmethod
+    def delete_project(project):
+
+        db.session.delete(project)
+        db.session.commit()

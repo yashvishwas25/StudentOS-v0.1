@@ -12,14 +12,16 @@ from app.utils.constants import (
     HTTP_400_BAD_REQUEST
 )
 
-from app.services.project_service import (
-    create_project
-)
-
 from app.utils.project_validators import (
     validate_project_data
 )
 
+from app.services.project_service import (
+    create_project,
+    get_user_projects,
+    get_project,
+    delete_project
+)
 
 projects_bp = Blueprint(
     "projects",
@@ -65,4 +67,100 @@ def create_new_project():
             "user_id": project.user_id
         },
         status_code=HTTP_201_CREATED
+    )
+
+@projects_bp.route(
+    "/projects",
+    methods=["GET"]
+)
+@jwt_required()
+def get_projects():
+
+    user_id = int(
+        get_jwt_identity()
+    )
+
+    success, projects = (
+        get_user_projects(user_id)
+    )
+
+    return success_response(
+        "Projects fetched successfully",
+        data=[
+            {
+                "id": project.id,
+                "name": project.name
+            }
+            for project in projects
+        ]
+    )
+    
+@projects_bp.route(
+    "/projects/<int:project_id>",
+    methods=["GET"]
+)
+@jwt_required()
+def get_single_project(project_id):
+
+    user_id = int(
+        get_jwt_identity()
+    )
+
+    project = get_project(
+        project_id
+    )
+
+    if not project:
+        raise AppError(
+            "Project not found",
+            404
+        )
+
+    if project.user_id != user_id:
+        raise AppError(
+            "Access denied",
+            403
+        )
+
+    return success_response(
+        "Project fetched successfully",
+        data={
+            "id": project.id,
+            "name": project.name
+        }
+    )
+    
+@projects_bp.route(
+    "/projects/<int:project_id>",
+    methods=["DELETE"]
+)
+@jwt_required()
+def remove_project(project_id):
+
+    user_id = int(
+        get_jwt_identity()
+    )
+
+    project = get_project(
+        project_id
+    )
+
+    if not project:
+        raise AppError(
+            "Project not found",
+            404
+        )
+
+    if project.user_id != user_id:
+        raise AppError(
+            "Access denied",
+            403
+        )
+
+    success, message = delete_project(
+        project
+    )
+
+    return success_response(
+        message
     )
