@@ -1,16 +1,63 @@
+import os
+
+from flask import current_app
+
+from werkzeug.utils import (
+    secure_filename
+)
+
+from app.utils.exceptions import (
+    AppError
+)
+
 from app.repositories.file_repository import (
     FileRepository
 )
 
 
-def create_file(
-    filename,
-    file_type,
-    file_path,
+def upload_file(
+    file,
     user_id
 ):
 
-    file = (
+    if not file:
+        raise AppError(
+            "File is required",
+            400
+        )
+
+    filename = secure_filename(
+        file.filename
+    )
+
+    if filename == "":
+        raise AppError(
+            "Invalid filename",
+            400
+        )
+
+    upload_folder = (
+        current_app.config[
+            "UPLOAD_FOLDER"
+        ]
+    )
+
+    file_path = os.path.join(
+        upload_folder,
+        filename
+    )
+
+    file.save(
+        file_path
+    )
+
+    file_type = (
+        filename.split(".")[-1]
+        if "." in filename
+        else "unknown"
+    )
+
+    uploaded_file = (
         FileRepository.create_file(
             filename,
             file_type,
@@ -19,11 +66,7 @@ def create_file(
         )
     )
 
-    return (
-        True,
-        "File created successfully",
-        file
-    )
+    return uploaded_file
 
 
 def get_user_files(
@@ -56,6 +99,17 @@ def get_file(
 def delete_file(
     file
 ):
+
+    if (
+        file.file_path
+        and
+        os.path.exists(
+            file.file_path
+        )
+    ):
+        os.remove(
+            file.file_path
+        )
 
     FileRepository.delete_file(
         file

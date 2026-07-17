@@ -1,4 +1,7 @@
-from flask import Blueprint, request
+from flask import (
+    Blueprint,
+    request
+)
 
 from flask_jwt_extended import (
     jwt_required,
@@ -8,16 +11,11 @@ from flask_jwt_extended import (
 from app.utils.exceptions import AppError
 from app.utils.responses import success_response
 from app.utils.constants import (
-    HTTP_201_CREATED,
-    HTTP_400_BAD_REQUEST
-)
-
-from app.utils.file_validators import (
-    validate_file_data
+    HTTP_201_CREATED
 )
 
 from app.services.file_service import (
-    create_file,
+    upload_file,
     get_user_files,
     get_file,
     delete_file
@@ -36,37 +34,27 @@ files_bp = Blueprint(
 @jwt_required()
 def create_new_file():
 
-    valid, cleaned_data, error = (
-        validate_file_data(
-            request.json
-        )
-    )
+    print("REQUEST FILES =", request.files)
+    print("REQUEST FORM =", request.form)
 
-    if not valid:
-        raise AppError(
-            error,
-            HTTP_400_BAD_REQUEST
-        )
+    file = request.files.get("file")
 
     user_id = int(
         get_jwt_identity()
     )
 
-    success, message, file = (
-        create_file(
-            cleaned_data["filename"],
-            cleaned_data["file_type"],
-            cleaned_data["file_path"],
-            user_id
-        )
+    uploaded_file = upload_file(
+        file,
+        user_id
     )
 
     return success_response(
-        message,
+        "File uploaded successfully",
         data={
-            "id": file.id,
-            "filename": file.filename,
-            "file_type": file.file_type
+            "id": uploaded_file.id,
+            "filename": uploaded_file.filename,
+            "file_type": uploaded_file.file_type,
+            "file_path": uploaded_file.file_path
         },
         status_code=HTTP_201_CREATED
     )
