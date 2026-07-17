@@ -67,3 +67,27 @@ def delete_assignment(
         True,
         "Assignment deleted successfully"
     )
+    
+def update_assignment(
+    assignment,
+    title,
+    description,
+    due_date,
+    status
+):
+
+    updated_assignment = (
+        AssignmentRepository.update_assignment(
+            assignment,
+            title,
+            description,
+            due_date,
+            status
+        )
+    )
+
+    return (
+        True,
+        "Assignment updated successfully",
+        updated_assignment
+    )

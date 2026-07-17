@@ -13,14 +13,16 @@ from app.utils.constants import (
 )
 
 from app.utils.assignment_validators import (
-    validate_assignment_data
+    validate_assignment_data,
+    validate_update_assignment_data
 )
 
 from app.services.assignment_service import (
     create_assignment,
     get_user_assignments,
     get_assignment,
-    delete_assignment
+    delete_assignment,
+    update_assignment
 )
 
 assignments_bp = Blueprint(
@@ -139,6 +141,69 @@ def get_single_assignment(
             "description": assignment.description,
             "due_date": assignment.due_date,
             "status": assignment.status
+        }
+    )
+
+
+@assignments_bp.route(
+    "/assignments/<int:assignment_id>",
+    methods=["PUT"]
+)
+@jwt_required()
+def edit_assignment(
+    assignment_id
+):
+
+    user_id = int(
+        get_jwt_identity()
+    )
+
+    assignment = get_assignment(
+        assignment_id
+    )
+
+    if not assignment:
+        raise AppError(
+            "Assignment not found",
+            404
+        )
+
+    if assignment.user_id != user_id:
+        raise AppError(
+            "Access denied",
+            403
+        )
+
+    valid, cleaned_data, error = (
+        validate_update_assignment_data(
+            request.json
+        )
+    )
+
+    if not valid:
+        raise AppError(
+            error,
+            HTTP_400_BAD_REQUEST
+        )
+
+    success, message, updated_assignment = (
+        update_assignment(
+            assignment,
+            cleaned_data["title"],
+            cleaned_data["description"],
+            cleaned_data["due_date"],
+            cleaned_data["status"]
+        )
+    )
+
+    return success_response(
+        message,
+        data={
+            "id": updated_assignment.id,
+            "title": updated_assignment.title,
+            "description": updated_assignment.description,
+            "due_date": updated_assignment.due_date,
+            "status": updated_assignment.status
         }
     )
 

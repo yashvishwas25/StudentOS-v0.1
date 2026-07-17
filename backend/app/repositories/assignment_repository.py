@@ -44,8 +44,17 @@ class AssignmentRepository:
 
     @staticmethod
     def update_assignment(
-        assignment
+        assignment,
+        title,
+        description,
+        due_date,
+        status
     ):
+
+        assignment.title = title
+        assignment.description = description
+        assignment.due_date = due_date
+        assignment.status = status
 
         db.session.commit()
 
