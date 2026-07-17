@@ -30,3 +30,8 @@ class User(db.Model):
         backref="user",
         lazy=True
     )
+    files = db.relationship(
+    "File",
+    backref="user",
+    lazy=True
+)

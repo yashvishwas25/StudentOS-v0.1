@@ -12,6 +12,8 @@ from app.models.project import Project
 from app.models.assignment import Assignment
 from app.routes.projects import projects_bp
 from app.routes.assignments import assignments_bp
+from app.models.file import File
+from app.routes.files import files_bp
 
 load_dotenv()
 
@@ -31,6 +33,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(projects_bp)
     app.register_blueprint(assignments_bp)
+    app.register_blueprint(files_bp)
 
     register_error_handlers(app)
 
