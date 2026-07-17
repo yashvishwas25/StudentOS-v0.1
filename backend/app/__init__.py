@@ -9,7 +9,9 @@ from app.utils.logger import logger
 from app.utils.jwt_manager import jwt
 from app.models.user import User
 from app.models.project import Project
+from app.models.assignment import Assignment
 from app.routes.projects import projects_bp
+from app.routes.assignments import assignments_bp
 
 load_dotenv()
 
@@ -28,6 +30,7 @@ def create_app():
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(projects_bp)
+    app.register_blueprint(assignments_bp)
 
     register_error_handlers(app)
 

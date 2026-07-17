@@ -25,3 +25,8 @@ class User(db.Model):
         backref="owner",
         lazy=True
     )
+    assignments = db.relationship(
+        "Assignment",
+        backref="user",
+        lazy=True
+    )
