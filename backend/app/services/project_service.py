@@ -28,6 +28,7 @@ def get_user_projects(user_id):
         projects
     )
 
+
 def get_project(project_id):
 
     project = ProjectRepository.get_project_by_id(
@@ -46,4 +47,20 @@ def delete_project(project):
     return (
         True,
         "Project deleted successfully"
+    )
+
+
+def update_project(project, name):
+
+    updated_project = (
+        ProjectRepository.update_project(
+            project,
+            name
+        )
+    )
+
+    return (
+        True,
+        "Project updated successfully",
+        updated_project
     )

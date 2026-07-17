@@ -13,14 +13,16 @@ from app.utils.constants import (
 )
 
 from app.utils.project_validators import (
-    validate_project_data
+    validate_project_data,
+    validate_update_project_data
 )
 
 from app.services.project_service import (
     create_project,
     get_user_projects,
     get_project,
-    delete_project
+    delete_project,
+    update_project
 )
 
 projects_bp = Blueprint(
@@ -69,6 +71,7 @@ def create_new_project():
         status_code=HTTP_201_CREATED
     )
 
+
 @projects_bp.route(
     "/projects",
     methods=["GET"]
@@ -94,7 +97,8 @@ def get_projects():
             for project in projects
         ]
     )
-    
+
+
 @projects_bp.route(
     "/projects/<int:project_id>",
     methods=["GET"]
@@ -129,7 +133,63 @@ def get_single_project(project_id):
             "name": project.name
         }
     )
-    
+
+
+@projects_bp.route(
+    "/projects/<int:project_id>",
+    methods=["PUT"]
+)
+@jwt_required()
+def edit_project(project_id):
+
+    user_id = int(
+        get_jwt_identity()
+    )
+
+    project = get_project(
+        project_id
+    )
+
+    if not project:
+        raise AppError(
+            "Project not found",
+            404
+        )
+
+    if project.user_id != user_id:
+        raise AppError(
+            "Access denied",
+            403
+        )
+
+    valid, cleaned_data, error = (
+        validate_update_project_data(
+            request.json
+        )
+    )
+
+    if not valid:
+        raise AppError(
+            error,
+            HTTP_400_BAD_REQUEST
+        )
+
+    success, message, updated_project = (
+        update_project(
+            project,
+            cleaned_data["name"]
+        )
+    )
+
+    return success_response(
+        message,
+        data={
+            "id": updated_project.id,
+            "name": updated_project.name
+        }
+    )
+
+
 @projects_bp.route(
     "/projects/<int:project_id>",
     methods=["DELETE"]

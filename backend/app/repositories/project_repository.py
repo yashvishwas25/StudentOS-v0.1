@@ -34,3 +34,11 @@ class ProjectRepository:
 
         db.session.delete(project)
         db.session.commit()
+        
+    @staticmethod
+    def update_project(project, name):
+        project.name = name
+
+        db.session.commit()
+
+        return project
