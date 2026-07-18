@@ -85,22 +85,42 @@ def get_assignments():
         get_jwt_identity()
     )
 
-    success, assignments = (
+    page = request.args.get(
+        "page",
+        default=1,
+        type=int
+    )
+
+    per_page = request.args.get(
+        "per_page",
+        default=5,
+        type=int
+    )
+
+    success, pagination = (
         get_user_assignments(
-            user_id
+            user_id,
+            page,
+            per_page
         )
     )
 
     return success_response(
         "Assignments fetched successfully",
-        data=[
-            {
-                "id": assignment.id,
-                "title": assignment.title,
-                "status": assignment.status
-            }
-            for assignment in assignments
-        ]
+        data={
+            "items": [
+                {
+                    "id": assignment.id,
+                    "title": assignment.title,
+                    "status": assignment.status
+                }
+                for assignment in pagination.items
+            ],
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "pages": pagination.pages
+        }
     )
 
 

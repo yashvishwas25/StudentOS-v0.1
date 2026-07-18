@@ -17,10 +17,16 @@ def create_project(name, user_id):
     )
 
 
-def get_user_projects(user_id):
+def get_user_projects(
+    user_id,
+    page=1,
+    per_page=5
+):
 
     projects = ProjectRepository.get_projects_by_user(
-        user_id
+        user_id=user_id,
+        page=page,
+        per_page=per_page
     )
 
     return (

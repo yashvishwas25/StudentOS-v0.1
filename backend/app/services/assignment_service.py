@@ -29,12 +29,16 @@ def create_assignment(
 
 
 def get_user_assignments(
-    user_id
+    user_id,
+    page=1,
+    per_page=5
 ):
 
     assignments = (
         AssignmentRepository.get_assignments_by_user(
-            user_id
+            user_id=user_id,
+            page=page,
+            per_page=per_page
         )
     )
 
@@ -67,7 +71,8 @@ def delete_assignment(
         True,
         "Assignment deleted successfully"
     )
-    
+
+
 def update_assignment(
     assignment,
     title,

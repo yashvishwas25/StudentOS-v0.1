@@ -18,12 +18,16 @@ class ProjectRepository:
         return project
 
     @staticmethod
-    def get_projects_by_user(user_id):
+    def get_projects_by_user(user_id, page=1, per_page=5):
 
         return Project.query.filter_by(
             user_id=user_id
-        ).all()
-        
+        ).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
+
     @staticmethod
     def get_project_by_id(project_id):
 
@@ -34,9 +38,10 @@ class ProjectRepository:
 
         db.session.delete(project)
         db.session.commit()
-        
+
     @staticmethod
     def update_project(project, name):
+
         project.name = name
 
         db.session.commit()

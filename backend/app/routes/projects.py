@@ -83,19 +83,41 @@ def get_projects():
         get_jwt_identity()
     )
 
-    success, projects = (
-        get_user_projects(user_id)
+    page = request.args.get(
+        "page",
+        default=1,
+        type=int
+    )
+
+    per_page = request.args.get(
+        "per_page",
+        default=5,
+        type=int
+    )
+
+    success, pagination = (
+        get_user_projects(
+            user_id,
+            page,
+            per_page
+        )
     )
 
     return success_response(
         "Projects fetched successfully",
-        data=[
-            {
-                "id": project.id,
-                "name": project.name
-            }
-            for project in projects
-        ]
+        data={
+            "items": [
+                {
+                    "id": project.id,
+                    "name": project.name
+                }
+                for project in pagination.items
+            ],
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "pages": pagination.pages
+        }
     )
 
 

@@ -71,22 +71,42 @@ def get_files():
         get_jwt_identity()
     )
 
-    success, files = (
+    page = request.args.get(
+        "page",
+        default=1,
+        type=int
+    )
+
+    per_page = request.args.get(
+        "per_page",
+        default=5,
+        type=int
+    )
+
+    success, pagination = (
         get_user_files(
-            user_id
+            user_id,
+            page,
+            per_page
         )
     )
 
     return success_response(
         "Files fetched successfully",
-        data=[
-            {
-                "id": file.id,
-                "filename": file.filename,
-                "file_type": file.file_type
-            }
-            for file in files
-        ]
+        data={
+            "items": [
+                {
+                    "id": file.id,
+                    "filename": file.filename,
+                    "file_type": file.file_type
+                }
+                for file in pagination.items
+            ],
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "pages": pagination.pages
+        }
     )
 
 

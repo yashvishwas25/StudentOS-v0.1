@@ -27,11 +27,19 @@ class AssignmentRepository:
         return assignment
 
     @staticmethod
-    def get_assignments_by_user(user_id):
+    def get_assignments_by_user(
+        user_id,
+        page=1,
+        per_page=5
+    ):
 
         return Assignment.query.filter_by(
             user_id=user_id
-        ).all()
+        ).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
 
     @staticmethod
     def get_assignment_by_id(
