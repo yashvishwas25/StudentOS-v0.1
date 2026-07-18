@@ -83,11 +83,25 @@ def get_files():
         type=int
     )
 
+    search = request.args.get(
+        "search",
+        default=None,
+        type=str
+    )
+
+    file_type = request.args.get(
+        "file_type",
+        default=None,
+        type=str
+    )
+
     success, pagination = (
         get_user_files(
             user_id,
             page,
-            per_page
+            per_page,
+            search,
+            file_type
         )
     )
 

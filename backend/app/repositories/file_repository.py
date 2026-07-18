@@ -28,12 +28,28 @@ class FileRepository:
     def get_files_by_user(
         user_id,
         page=1,
-        per_page=5
+        per_page=5,
+        search=None,
+        file_type=None
     ):
 
-        return File.query.filter_by(
+        query = File.query.filter_by(
             user_id=user_id
-        ).paginate(
+        )
+
+        if search:
+            query = query.filter(
+                File.filename.ilike(
+                    f"%{search}%"
+                )
+            )
+
+        if file_type:
+            query = query.filter_by(
+                file_type=file_type
+            )
+
+        return query.paginate(
             page=page,
             per_page=per_page,
             error_out=False

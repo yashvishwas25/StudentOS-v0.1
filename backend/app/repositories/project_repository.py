@@ -18,11 +18,25 @@ class ProjectRepository:
         return project
 
     @staticmethod
-    def get_projects_by_user(user_id, page=1, per_page=5):
+    def get_projects_by_user(
+        user_id,
+        page=1,
+        per_page=5,
+        search=None
+    ):
 
-        return Project.query.filter_by(
+        query = Project.query.filter_by(
             user_id=user_id
-        ).paginate(
+        )
+
+        if search:
+            query = query.filter(
+                Project.name.ilike(
+                    f"%{search}%"
+                )
+            )
+
+        return query.paginate(
             page=page,
             per_page=per_page,
             error_out=False

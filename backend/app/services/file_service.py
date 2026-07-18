@@ -72,14 +72,18 @@ def upload_file(
 def get_user_files(
     user_id,
     page=1,
-    per_page=5
+    per_page=5,
+    search=None,
+    file_type=None
 ):
 
     files = (
         FileRepository.get_files_by_user(
             user_id=user_id,
             page=page,
-            per_page=per_page
+            per_page=per_page,
+            search=search,
+            file_type=file_type
         )
     )
 

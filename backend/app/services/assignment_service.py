@@ -31,14 +31,18 @@ def create_assignment(
 def get_user_assignments(
     user_id,
     page=1,
-    per_page=5
+    per_page=5,
+    search=None,
+    status=None
 ):
 
     assignments = (
         AssignmentRepository.get_assignments_by_user(
             user_id=user_id,
             page=page,
-            per_page=per_page
+            per_page=per_page,
+            search=search,
+            status=status
         )
     )
 

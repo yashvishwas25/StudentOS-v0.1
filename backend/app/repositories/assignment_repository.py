@@ -30,12 +30,28 @@ class AssignmentRepository:
     def get_assignments_by_user(
         user_id,
         page=1,
-        per_page=5
+        per_page=5,
+        search=None,
+        status=None
     ):
 
-        return Assignment.query.filter_by(
+        query = Assignment.query.filter_by(
             user_id=user_id
-        ).paginate(
+        )
+
+        if search:
+            query = query.filter(
+                Assignment.title.ilike(
+                    f"%{search}%"
+                )
+            )
+
+        if status:
+            query = query.filter_by(
+                status=status
+            )
+
+        return query.paginate(
             page=page,
             per_page=per_page,
             error_out=False

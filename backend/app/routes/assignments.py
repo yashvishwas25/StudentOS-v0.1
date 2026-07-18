@@ -97,11 +97,25 @@ def get_assignments():
         type=int
     )
 
+    search = request.args.get(
+        "search",
+        default=None,
+        type=str
+    )
+
+    status = request.args.get(
+        "status",
+        default=None,
+        type=str
+    )
+
     success, pagination = (
         get_user_assignments(
             user_id,
             page,
-            per_page
+            per_page,
+            search,
+            status
         )
     )
 

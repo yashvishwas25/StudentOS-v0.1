@@ -95,11 +95,18 @@ def get_projects():
         type=int
     )
 
+    search = request.args.get(
+        "search",
+        default=None,
+        type=str
+    )
+
     success, pagination = (
         get_user_projects(
             user_id,
             page,
-            per_page
+            per_page,
+            search
         )
     )
 
