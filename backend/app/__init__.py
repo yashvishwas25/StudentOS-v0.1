@@ -14,6 +14,7 @@ from app.routes.projects import projects_bp
 from app.routes.assignments import assignments_bp
 from app.models.file import File
 from app.routes.files import files_bp
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -37,4 +38,10 @@ def create_app():
 
     register_error_handlers(app)
 
+    CORS(
+    app,
+    origins=[app.config["FRONTEND_ORIGIN"]],
+    supports_credentials=False,
+    )
     return app
+
