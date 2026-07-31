@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import DashboardLayout from "../layouts/DashboardLayout";
-import Card from "../components/Card";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Pagination from "../components/Pagination";
@@ -71,7 +69,7 @@ const Files = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <h1 className="font-display text-2xl font-semibold text-ink">Files</h1>
       <p className="mt-1 text-sm text-ink-muted">Access your files from any device.</p>
 
@@ -132,7 +130,7 @@ const Files = () => {
       </div>
 
       <Pagination page={page} pages={pages} onPageChange={(p) => loadFiles(p, search)} />
-    </DashboardLayout>
+    </>
   );
 };
 

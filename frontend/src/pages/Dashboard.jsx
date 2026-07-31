@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import DashboardLayout from "../layouts/DashboardLayout";
 import Card from "../components/Card";
 import { useAuth } from "../hooks/useAuth";
 
@@ -13,7 +12,7 @@ const Dashboard = () => {
   const { user } = useAuth();
 
   return (
-    <DashboardLayout>
+    <>
       <h1 className="font-display text-2xl font-semibold text-ink">
         Welcome back, {user?.username}
       </h1>
@@ -33,7 +32,7 @@ const Dashboard = () => {
           </Link>
         ))}
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

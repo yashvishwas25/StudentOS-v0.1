@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "../layouts/DashboardLayout";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import Input from "../components/Input";
@@ -73,7 +72,7 @@ const Assignments = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <h1 className="font-display text-2xl font-semibold text-ink">Assignments</h1>
       <p className="mt-1 text-sm text-ink-muted">Track your coursework and deadlines.</p>
 
@@ -144,7 +143,7 @@ const Assignments = () => {
       </div>
 
       <Pagination page={page} pages={pages} onPageChange={(p) => loadAssignments(p)} />
-    </DashboardLayout>
+    </>
   );
 };
 

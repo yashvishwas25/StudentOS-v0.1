@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -19,37 +20,17 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           <Route
-            path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/projects"
-            element={
-              <ProtectedRoute>
-                <Projects />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/assignments"
-            element={
-              <ProtectedRoute>
-                <Assignments />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/files"
-            element={
-              <ProtectedRoute>
-                <Files />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/assignments" element={<Assignments />} />
+            <Route path="/files" element={<Files />} />
+          </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
