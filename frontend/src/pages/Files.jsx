@@ -3,42 +3,27 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
+import { usePaginatedResource } from "../hooks/usePaginatedResource";
+import { useToast } from "../hooks/useToast";
 import { getFiles, uploadFile, deleteFile } from "../api/files";
 
 const Files = () => {
-  const [files, setFiles] = useState([]);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
+  const { items: files, page, pages, loading, error, setError, load } =
+    usePaginatedResource(getFiles);
+  const { showToast } = useToast();
+
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const fileInputRef = useRef(null);
 
-  const loadFiles = async (targetPage = page, targetSearch = search) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await getFiles({ page: targetPage, search: targetSearch });
-      setFiles(res.data.items);
-      setPage(res.data.page);
-      setPages(res.data.pages);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load files");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadFiles(1, search);
+    load({ page: 1, search });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    loadFiles(1, search);
+    load({ page: 1, search });
   };
 
   const handleFileSelect = async (e) => {
@@ -50,9 +35,12 @@ const Files = () => {
 
     try {
       await uploadFile(file);
-      loadFiles(1, search);
+      load({ page: 1, search });
+      showToast("File uploaded successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Upload failed");
+      const message = err.response?.data?.message || "Upload failed";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -62,9 +50,12 @@ const Files = () => {
   const handleDelete = async (id) => {
     try {
       await deleteFile(id);
-      loadFiles(page, search);
+      load({ page, search });
+      showToast("File deleted successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to delete file");
+      const message = err.response?.data?.message || "Failed to delete file";
+      setError(message);
+      showToast(message, "error");
     }
   };
 
@@ -81,10 +72,7 @@ const Files = () => {
           className="hidden"
           id="file-upload"
         />
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          loading={uploading}
-        >
+        <Button onClick={() => fileInputRef.current?.click()} loading={uploading}>
           Upload file
         </Button>
       </div>
@@ -129,7 +117,7 @@ const Files = () => {
         )}
       </div>
 
-      <Pagination page={page} pages={pages} onPageChange={(p) => loadFiles(p, search)} />
+      <Pagination page={page} pages={pages} onPageChange={(p) => load({ page: p, search })} />
     </>
   );
 };

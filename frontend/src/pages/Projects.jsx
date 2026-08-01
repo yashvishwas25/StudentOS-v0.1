@@ -1,44 +1,30 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
+import { usePaginatedResource } from "../hooks/usePaginatedResource";
+import { useToast } from "../hooks/useToast";
 import { getProjects, createProject, deleteProject } from "../api/projects";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([]);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
+  const { items: projects, page, pages, loading, error, setError, load } =
+    usePaginatedResource(getProjects);
+  const { showToast } = useToast();
+
   const [search, setSearch] = useState("");
   const [newName, setNewName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const loadProjects = async (targetPage = page, targetSearch = search) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await getProjects({ page: targetPage, search: targetSearch });
-      setProjects(res.data.items);
-      setPage(res.data.page);
-      setPages(res.data.pages);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load projects");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    loadProjects(1, search);
+    load({ page: 1, search });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    loadProjects(1, search);
+    load({ page: 1, search });
   };
 
   const handleCreate = async (e) => {
@@ -48,18 +34,24 @@ const Projects = () => {
     try {
       await createProject(newName.trim());
       setNewName("");
-      loadProjects(1, search);
+      load({ page: 1, search });
+      showToast("Project created successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create project");
+      const message = err.response?.data?.message || "Failed to create project";
+      setError(message);
+      showToast(message, "error");
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteProject(id);
-      loadProjects(page, search);
+      load({ page, search });
+      showToast("Project deleted successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to delete project");
+      const message = err.response?.data?.message || "Failed to delete project";
+      setError(message);
+      showToast(message, "error");
     }
   };
 
@@ -102,7 +94,12 @@ const Projects = () => {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <Card key={project.id} className="flex items-center justify-between">
-                <span className="font-medium text-ink">{project.name}</span>
+                <Link
+                  to={`/projects/${project.id}`}
+                  className="font-medium text-ink hover:text-primary hover:underline"
+                >
+                  {project.name}
+                </Link>
                 <button
                   onClick={() => handleDelete(project.id)}
                   className="text-xs font-medium text-danger hover:underline"
@@ -115,7 +112,7 @@ const Projects = () => {
         )}
       </div>
 
-      <Pagination page={page} pages={pages} onPageChange={(p) => loadProjects(p, search)} />
+      <Pagination page={page} pages={pages} onPageChange={(p) => load({ page: p, search })} />
     </>
   );
 };

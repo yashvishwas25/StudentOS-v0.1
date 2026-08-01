@@ -1,52 +1,34 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Badge from "../components/Badge";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
+import { usePaginatedResource } from "../hooks/usePaginatedResource";
+import { useToast } from "../hooks/useToast";
 import { getAssignments, createAssignment, deleteAssignment } from "../api/assignments";
 
 const statusOptions = ["", "pending", "in-progress", "completed"];
 
 const Assignments = () => {
-  const [assignments, setAssignments] = useState([]);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
+  const { items: assignments, page, pages, loading, error, setError, load } =
+    usePaginatedResource(getAssignments);
+  const { showToast } = useToast();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [form, setForm] = useState({ title: "", description: "", due_date: "" });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const loadAssignments = async (targetPage = page) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await getAssignments({
-        page: targetPage,
-        search,
-        status: statusFilter,
-      });
-      setAssignments(res.data.items);
-      setPage(res.data.page);
-      setPages(res.data.pages);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load assignments");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    loadAssignments(1);
+    load({ page: 1, search, status: statusFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
   const handleFilterSubmit = (e) => {
     e.preventDefault();
-    loadAssignments(1);
+    load({ page: 1, search, status: statusFilter });
   };
 
   const handleCreate = async (e) => {
@@ -56,18 +38,24 @@ const Assignments = () => {
     try {
       await createAssignment({ ...form, status: "pending" });
       setForm({ title: "", description: "", due_date: "" });
-      loadAssignments(1);
+      load({ page: 1, search, status: statusFilter });
+      showToast("Assignment created successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create assignment");
+      const message = err.response?.data?.message || "Failed to create assignment";
+      setError(message);
+      showToast(message, "error");
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteAssignment(id);
-      loadAssignments(page);
+      load({ page, search, status: statusFilter });
+      showToast("Assignment deleted successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to delete assignment");
+      const message = err.response?.data?.message || "Failed to delete assignment";
+      setError(message);
+      showToast(message, "error");
     }
   };
 
@@ -126,7 +114,12 @@ const Assignments = () => {
           assignments.map((a) => (
             <Card key={a.id} className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-ink">{a.title}</p>
+                <Link
+                  to={`/assignments/${a.id}`}
+                  className="font-medium text-ink hover:text-primary hover:underline"
+                >
+                  {a.title}
+                </Link>
               </div>
               <div className="flex items-center gap-3">
                 <Badge status={a.status} />
@@ -142,7 +135,11 @@ const Assignments = () => {
         )}
       </div>
 
-      <Pagination page={page} pages={pages} onPageChange={(p) => loadAssignments(p)} />
+      <Pagination
+        page={page}
+        pages={pages}
+        onPageChange={(p) => load({ page: p, search, status: statusFilter })}
+      />
     </>
   );
 };
