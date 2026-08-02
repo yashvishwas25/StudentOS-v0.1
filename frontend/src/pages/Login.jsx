@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout";
 import Input from "../components/Input";
 import Button from "../components/Button";
@@ -10,34 +10,36 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const successMessage = location.state?.message;
+  const sessionExpired = searchParams.get("expired") === "1";
 
   const [form, setForm] = useState({ username: "", password: "" });
-  const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setFieldErrors({ ...fieldErrors, [e.target.name]: "" });
-  };
-
-  const validateForm = () => {
-    const errors = {
-      username: validateUsername(form.username),
-      password: validatePassword(form.password),
-    };
-    setFieldErrors(errors);
-    return !errors.username && !errors.password;
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setFieldErrors({ ...fieldErrors, [name]: "" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!validateForm()) return;
+    const usernameError = validateUsername(form.username);
+    const passwordError = validatePassword(form.password);
+
+    if (usernameError || passwordError) {
+      setFieldErrors({ username: usernameError, password: passwordError });
+      return;
+    }
 
     setLoading(true);
+
     try {
       await login(form.username, form.password);
       navigate("/dashboard");
@@ -58,7 +60,13 @@ const Login = () => {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+      {sessionExpired && (
+        <p className="mb-4 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
+          Your session has expired. Please log in again.
+        </p>
+      )}
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Input
           id="username"
           name="username"
@@ -66,6 +74,7 @@ const Login = () => {
           value={form.username}
           onChange={handleChange}
           error={fieldErrors.username}
+          required
         />
         <Input
           id="password"
@@ -75,6 +84,7 @@ const Login = () => {
           value={form.password}
           onChange={handleChange}
           error={fieldErrors.password}
+          required
         />
 
         {error && <p className="text-sm text-danger">{error}</p>}

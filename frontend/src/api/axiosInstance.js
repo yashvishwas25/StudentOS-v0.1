@@ -18,12 +18,15 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 // Handle expired/invalid tokens globally
+// 401 = expired or invalid signature, 422 = malformed/corrupted token (Flask-JWT-Extended)
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+
+    if (status === 401 || status === 422) {
       localStorage.removeItem("studentos_token");
-      window.location.href = "/login";
+      window.location.href = "/login?expired=1";
     }
 
     return Promise.reject(error);

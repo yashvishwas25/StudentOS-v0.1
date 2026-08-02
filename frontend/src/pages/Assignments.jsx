@@ -8,8 +8,8 @@ import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useToast } from "../hooks/useToast";
-import { validateAssignmentTitle } from "../utils/validators";
 import { getAssignments, createAssignment, deleteAssignment } from "../api/assignments";
+import { validateAssignmentTitle } from "../utils/validators";
 
 const statusOptions = ["", "pending", "in-progress", "completed"];
 
@@ -21,7 +21,6 @@ const Assignments = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [form, setForm] = useState({ title: "", description: "", due_date: "" });
-  const [titleError, setTitleError] = useState("");
 
   useEffect(() => {
     load({ page: 1, search, status: statusFilter });
@@ -38,14 +37,13 @@ const Assignments = () => {
 
     const validationError = validateAssignmentTitle(form.title);
     if (validationError) {
-      setTitleError(validationError);
+      setError(validationError);
       return;
     }
 
     try {
       await createAssignment({ ...form, status: "pending" });
       setForm({ title: "", description: "", due_date: "" });
-      setTitleError("");
       load({ page: 1, search, status: statusFilter });
       showToast("Assignment created successfully");
     } catch (err) {
@@ -72,18 +70,13 @@ const Assignments = () => {
       <h1 className="font-display text-2xl font-semibold text-ink">Assignments</h1>
       <p className="mt-1 text-sm text-ink-muted">Track your coursework and deadlines.</p>
 
-      <form onSubmit={handleCreate} className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-4" noValidate>
-        <div className="sm:col-span-2">
-          <Input
-            placeholder="Title"
-            value={form.title}
-            onChange={(e) => {
-              setForm({ ...form, title: e.target.value });
-              setTitleError("");
-            }}
-            error={titleError}
-          />
-        </div>
+      <form onSubmit={handleCreate} className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-4">
+        <Input
+          placeholder="Title"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          className="sm:col-span-2"
+        />
         <Input
           placeholder="Due date (e.g. 2026-08-01)"
           value={form.due_date}

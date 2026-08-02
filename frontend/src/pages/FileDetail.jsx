@@ -11,6 +11,7 @@ const FileDetail = () => {
 
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -31,6 +32,7 @@ const FileDetail = () => {
   }, [id]);
 
   const handleDelete = async () => {
+    setDeleting(true);
     try {
       await deleteFile(id);
       showToast("File deleted successfully");
@@ -39,6 +41,8 @@ const FileDetail = () => {
       const message = err.response?.data?.message || "Failed to delete file";
       setError(message);
       showToast(message, "error");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -77,9 +81,10 @@ const FileDetail = () => {
 
           <button
             onClick={handleDelete}
-            className="mt-6 text-sm font-medium text-danger hover:underline"
+            disabled={deleting}
+            className="mt-6 text-sm font-medium text-danger hover:underline disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Delete file
+            {deleting ? "Deleting..." : "Delete file"}
           </button>
         </Card>
       )}

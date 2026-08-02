@@ -11,31 +11,30 @@ const Register = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ username: "", password: "" });
-  const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setFieldErrors({ ...fieldErrors, [e.target.name]: "" });
-  };
-
-  const validateForm = () => {
-    const errors = {
-      username: validateUsername(form.username),
-      password: validatePassword(form.password),
-    };
-    setFieldErrors(errors);
-    return !errors.username && !errors.password;
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setFieldErrors({ ...fieldErrors, [name]: "" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!validateForm()) return;
+    const usernameError = validateUsername(form.username);
+    const passwordError = validatePassword(form.password);
+
+    if (usernameError || passwordError) {
+      setFieldErrors({ username: usernameError, password: passwordError });
+      return;
+    }
 
     setLoading(true);
+
     try {
       await register(form.username, form.password);
       navigate("/login", {
@@ -52,7 +51,7 @@ const Register = () => {
     <AuthLayout>
       <h2 className="mb-5 text-center text-lg font-semibold text-ink">Create your account</h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Input
           id="username"
           name="username"
@@ -60,6 +59,7 @@ const Register = () => {
           value={form.username}
           onChange={handleChange}
           error={fieldErrors.username}
+          required
         />
         <Input
           id="password"
@@ -69,6 +69,7 @@ const Register = () => {
           value={form.password}
           onChange={handleChange}
           error={fieldErrors.password}
+          required
         />
         <p className="-mt-2 text-xs text-ink-muted">
           At least 3 characters for username, 6 for password.
