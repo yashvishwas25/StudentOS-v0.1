@@ -4,6 +4,7 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useToast } from "../hooks/useToast";
+import { validateProjectName } from "../utils/validators";
 import { getProject, updateProject, deleteProject } from "../api/projects";
 
 const ProjectDetail = () => {
@@ -12,6 +13,7 @@ const ProjectDetail = () => {
   const { showToast } = useToast();
 
   const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +37,13 @@ const ProjectDetail = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+
+    const validationError = validateProjectName(name);
+    if (validationError) {
+      setNameError(validationError);
+      return;
+    }
+
     setSaving(true);
     setError("");
     try {
@@ -77,10 +86,17 @@ const ProjectDetail = () => {
 
       {!error && (
         <Card className="mt-6 max-w-lg">
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} className="space-y-4" noValidate>
             <div>
               <label className="mb-1 block text-sm font-medium text-ink">Project name</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Input
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setNameError("");
+                }}
+                error={nameError}
+              />
             </div>
 
             <div className="flex gap-3">

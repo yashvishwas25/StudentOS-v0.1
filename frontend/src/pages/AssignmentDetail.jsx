@@ -4,6 +4,7 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useToast } from "../hooks/useToast";
+import { validateAssignmentTitle } from "../utils/validators";
 import { getAssignment, updateAssignment, deleteAssignment } from "../api/assignments";
 
 const statusOptions = ["pending", "in-progress", "completed"];
@@ -14,6 +15,7 @@ const AssignmentDetail = () => {
   const { showToast } = useToast();
 
   const [form, setForm] = useState({ title: "", description: "", due_date: "", status: "pending" });
+  const [titleError, setTitleError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -42,6 +44,13 @@ const AssignmentDetail = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+
+    const validationError = validateAssignmentTitle(form.title);
+    if (validationError) {
+      setTitleError(validationError);
+      return;
+    }
+
     setSaving(true);
     setError("");
     try {
@@ -84,10 +93,17 @@ const AssignmentDetail = () => {
 
       {!error && (
         <Card className="mt-6 max-w-lg">
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} className="space-y-4" noValidate>
             <div>
               <label className="mb-1 block text-sm font-medium text-ink">Title</label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <Input
+                value={form.title}
+                onChange={(e) => {
+                  setForm({ ...form, title: e.target.value });
+                  setTitleError("");
+                }}
+                error={titleError}
+              />
             </div>
 
             <div>

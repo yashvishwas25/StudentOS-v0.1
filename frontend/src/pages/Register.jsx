@@ -4,24 +4,38 @@ import AuthLayout from "../layouts/AuthLayout";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { useAuth } from "../hooks/useAuth";
+import { validateUsername, validatePassword } from "../utils/validators";
 
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ username: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setFieldErrors({ ...fieldErrors, [e.target.name]: "" });
+  };
+
+  const validateForm = () => {
+    const errors = {
+      username: validateUsername(form.username),
+      password: validatePassword(form.password),
+    };
+    setFieldErrors(errors);
+    return !errors.username && !errors.password;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
+    if (!validateForm()) return;
+
+    setLoading(true);
     try {
       await register(form.username, form.password);
       navigate("/login", {
@@ -38,14 +52,14 @@ const Register = () => {
     <AuthLayout>
       <h2 className="mb-5 text-center text-lg font-semibold text-ink">Create your account</h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
         <Input
           id="username"
           name="username"
           label="Username"
           value={form.username}
           onChange={handleChange}
-          required
+          error={fieldErrors.username}
         />
         <Input
           id="password"
@@ -54,7 +68,7 @@ const Register = () => {
           label="Password"
           value={form.password}
           onChange={handleChange}
-          required
+          error={fieldErrors.password}
         />
         <p className="-mt-2 text-xs text-ink-muted">
           At least 3 characters for username, 6 for password.

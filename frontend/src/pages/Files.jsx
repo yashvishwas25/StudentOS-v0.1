@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Pagination from "../components/Pagination";
@@ -102,7 +103,12 @@ const Files = () => {
             {files.map((file) => (
               <div key={file.id} className="flex items-center justify-between px-4 py-3">
                 <div>
-                  <p className="text-sm font-medium text-ink">{file.filename}</p>
+                  <Link
+                    to={`/files/${file.id}`}
+                    className="text-sm font-medium text-ink hover:text-primary hover:underline"
+                  >
+                    {file.filename}
+                  </Link>
                   <p className="text-xs uppercase text-ink-muted">{file.file_type}</p>
                 </div>
                 <button

@@ -12,6 +12,8 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Assignments from "./pages/Assignments";
 import AssignmentDetail from "./pages/AssignmentDetail";
 import Files from "./pages/Files";
+import FileDetail from "./pages/FileDetail";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -36,9 +38,10 @@ function App() {
               <Route path="/assignments" element={<Assignments />} />
               <Route path="/assignments/:id" element={<AssignmentDetail />} />
               <Route path="/files" element={<Files />} />
+              <Route path="/files/:id" element={<FileDetail />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
       </ToastProvider>

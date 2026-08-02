@@ -4,6 +4,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { useAuth } from "../hooks/useAuth";
+import { validateUsername, validatePassword } from "../utils/validators";
 
 const Login = () => {
   const { login } = useAuth();
@@ -12,18 +13,31 @@ const Login = () => {
   const successMessage = location.state?.message;
 
   const [form, setForm] = useState({ username: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setFieldErrors({ ...fieldErrors, [e.target.name]: "" });
+  };
+
+  const validateForm = () => {
+    const errors = {
+      username: validateUsername(form.username),
+      password: validatePassword(form.password),
+    };
+    setFieldErrors(errors);
+    return !errors.username && !errors.password;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
+    if (!validateForm()) return;
+
+    setLoading(true);
     try {
       await login(form.username, form.password);
       navigate("/dashboard");
@@ -44,14 +58,14 @@ const Login = () => {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
         <Input
           id="username"
           name="username"
           label="Username"
           value={form.username}
           onChange={handleChange}
-          required
+          error={fieldErrors.username}
         />
         <Input
           id="password"
@@ -60,7 +74,7 @@ const Login = () => {
           label="Password"
           value={form.password}
           onChange={handleChange}
-          required
+          error={fieldErrors.password}
         />
 
         {error && <p className="text-sm text-danger">{error}</p>}

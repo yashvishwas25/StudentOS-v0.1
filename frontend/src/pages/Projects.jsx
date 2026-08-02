@@ -7,6 +7,7 @@ import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useToast } from "../hooks/useToast";
+import { validateProjectName } from "../utils/validators";
 import { getProjects, createProject, deleteProject } from "../api/projects";
 
 const Projects = () => {
@@ -16,6 +17,7 @@ const Projects = () => {
 
   const [search, setSearch] = useState("");
   const [newName, setNewName] = useState("");
+  const [nameError, setNameError] = useState("");
 
   useEffect(() => {
     load({ page: 1, search });
@@ -29,11 +31,17 @@ const Projects = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!newName.trim()) return;
+
+    const validationError = validateProjectName(newName);
+    if (validationError) {
+      setNameError(validationError);
+      return;
+    }
 
     try {
       await createProject(newName.trim());
       setNewName("");
+      setNameError("");
       load({ page: 1, search });
       showToast("Project created successfully");
     } catch (err) {
@@ -60,13 +68,18 @@ const Projects = () => {
       <h1 className="font-display text-2xl font-semibold text-ink">Projects</h1>
       <p className="mt-1 text-sm text-ink-muted">Organize and track your academic projects.</p>
 
-      <form onSubmit={handleCreate} className="mt-6 flex gap-3">
-        <Input
-          placeholder="New project name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          className="flex-1"
-        />
+      <form onSubmit={handleCreate} className="mt-6 flex gap-3" noValidate>
+        <div className="flex-1">
+          <Input
+            placeholder="New project name"
+            value={newName}
+            onChange={(e) => {
+              setNewName(e.target.value);
+              setNameError("");
+            }}
+            error={nameError}
+          />
+        </div>
         <Button type="submit">Add project</Button>
       </form>
 
