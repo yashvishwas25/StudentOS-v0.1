@@ -14,6 +14,7 @@ const Files = () => {
   const { showToast } = useToast();
 
   const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -24,6 +25,7 @@ const Files = () => {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    setActiveSearch(search);
     load({ page: 1, search });
   };
 
@@ -94,10 +96,17 @@ const Files = () => {
         {loading ? (
           <p className="text-sm text-ink-muted">Loading files...</p>
         ) : files.length === 0 ? (
-          <EmptyState
-            title="No files yet"
-            description="Upload your first file to keep it with you across devices."
-          />
+          activeSearch ? (
+            <EmptyState
+              title="No matching files"
+              description={`No files found for "${activeSearch}". Try a different search.`}
+            />
+          ) : (
+            <EmptyState
+              title="No files yet"
+              description="Upload your first file to keep it with you across devices."
+            />
+          )
         ) : (
           <div className="divide-y divide-border rounded-lg border border-border bg-surface">
             {files.map((file) => (

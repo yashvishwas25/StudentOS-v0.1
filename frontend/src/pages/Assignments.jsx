@@ -19,6 +19,7 @@ const Assignments = () => {
   const { showToast } = useToast();
 
   const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [form, setForm] = useState({ title: "", description: "", due_date: "" });
 
@@ -27,8 +28,14 @@ const Assignments = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
+  const handleTitleChange = (e) => {
+    setForm({ ...form, title: e.target.value });
+    if (error) setError("");
+  };
+
   const handleFilterSubmit = (e) => {
     e.preventDefault();
+    setActiveSearch(search);
     load({ page: 1, search, status: statusFilter });
   };
 
@@ -65,6 +72,8 @@ const Assignments = () => {
     }
   };
 
+  const isFiltering = activeSearch || statusFilter;
+
   return (
     <>
       <h1 className="font-display text-2xl font-semibold text-ink">Assignments</h1>
@@ -74,7 +83,7 @@ const Assignments = () => {
         <Input
           placeholder="Title"
           value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          onChange={handleTitleChange}
           className="sm:col-span-2"
         />
         <Input
@@ -112,10 +121,17 @@ const Assignments = () => {
         {loading ? (
           <p className="text-sm text-ink-muted">Loading assignments...</p>
         ) : assignments.length === 0 ? (
-          <EmptyState
-            title="No assignments yet"
-            description="Add your first assignment above."
-          />
+          isFiltering ? (
+            <EmptyState
+              title="No matching assignments"
+              description="Try a different search term or status filter."
+            />
+          ) : (
+            <EmptyState
+              title="No assignments yet"
+              description="Add your first assignment above."
+            />
+          )
         ) : (
           assignments.map((a) => (
             <Card key={a.id} className="flex items-center justify-between">

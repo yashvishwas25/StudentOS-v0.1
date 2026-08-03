@@ -16,6 +16,7 @@ const Projects = () => {
   const { showToast } = useToast();
 
   const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [newName, setNewName] = useState("");
 
   useEffect(() => {
@@ -23,8 +24,14 @@ const Projects = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleNameChange = (e) => {
+    setNewName(e.target.value);
+    if (error) setError("");
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    setActiveSearch(search);
     load({ page: 1, search });
   };
 
@@ -70,7 +77,7 @@ const Projects = () => {
         <Input
           placeholder="New project name"
           value={newName}
-          onChange={(e) => setNewName(e.target.value)}
+          onChange={handleNameChange}
           className="flex-1"
         />
         <Button type="submit">Add project</Button>
@@ -92,10 +99,17 @@ const Projects = () => {
         {loading ? (
           <p className="text-sm text-ink-muted">Loading projects...</p>
         ) : projects.length === 0 ? (
-          <EmptyState
-            title="No projects yet"
-            description="Create your first project to get started."
-          />
+          activeSearch ? (
+            <EmptyState
+              title="No matching projects"
+              description={`No projects found for "${activeSearch}". Try a different search.`}
+            />
+          ) : (
+            <EmptyState
+              title="No projects yet"
+              description="Create your first project to get started."
+            />
+          )
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
