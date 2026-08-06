@@ -1,26 +1,50 @@
-const Pagination = ({ page, pages, onPageChange }) => {
-  if (pages <= 1) return null;
+import Button from "./Button";
+
+const Pagination = ({
+  page,
+  pages,
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
+  // Backward compatibility
+  const activePage = currentPage ?? page;
+  const total = totalPages ?? pages;
+
+  if (!total || total <= 1) return null;
 
   return (
-    <div className="mt-4 flex items-center justify-center gap-3">
-      <button
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        className="rounded-md border border-border px-3 py-1.5 text-sm text-ink disabled:opacity-40"
+    <nav
+      aria-label="Pagination"
+      className="mt-6 flex items-center justify-between gap-4"
+    >
+      <Button
+        variant="outline"
+        onClick={() => onPageChange(activePage - 1)}
+        disabled={activePage === 1}
       >
         Previous
-      </button>
-      <span className="text-sm text-ink-muted">
-        Page {page} of {pages}
-      </span>
-      <button
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= pages}
-        className="rounded-md border border-border px-3 py-1.5 text-sm text-ink disabled:opacity-40"
+      </Button>
+
+      <div className="text-sm text-ink-muted">
+        Page{" "}
+        <span className="font-medium text-ink">
+          {activePage}
+        </span>{" "}
+        of{" "}
+        <span className="font-medium text-ink">
+          {total}
+        </span>
+      </div>
+
+      <Button
+        variant="outline"
+        onClick={() => onPageChange(activePage + 1)}
+        disabled={activePage === total}
       >
         Next
-      </button>
-    </div>
+      </Button>
+    </nav>
   );
 };
 

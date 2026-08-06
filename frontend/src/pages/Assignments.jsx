@@ -6,55 +6,110 @@ import Input from "../components/Input";
 import Badge from "../components/Badge";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
+import Skeleton from "../components/Skeleton";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useToast } from "../hooks/useToast";
-import { getAssignments, createAssignment, deleteAssignment } from "../api/assignments";
+import {
+  getAssignments,
+  createAssignment,
+  deleteAssignment,
+} from "../api/assignments";
 import { validateAssignmentTitle } from "../utils/validators";
 
 const statusOptions = ["", "pending", "in-progress", "completed"];
 
+const badgeVariantMap = {
+  pending: "warning",
+  "in-progress": "info",
+  completed: "success",
+};
+
 const Assignments = () => {
-  const { items: assignments, page, pages, loading, error, setError, load } =
-    usePaginatedResource(getAssignments);
+  const {
+    items: assignments,
+    page,
+    pages,
+    loading,
+    error,
+    setError,
+    load,
+  } = usePaginatedResource(getAssignments);
+
   const { showToast } = useToast();
 
   const [search, setSearch] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [form, setForm] = useState({ title: "", description: "", due_date: "" });
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    due_date: "",
+  });
 
   useEffect(() => {
-    load({ page: 1, search, status: statusFilter });
+    load({
+      page: 1,
+      search,
+      status: statusFilter,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
   const handleTitleChange = (e) => {
-    setForm({ ...form, title: e.target.value });
+    setForm({
+      ...form,
+      title: e.target.value,
+    });
+
     if (error) setError("");
   };
 
   const handleFilterSubmit = (e) => {
     e.preventDefault();
+
     setActiveSearch(search);
-    load({ page: 1, search, status: statusFilter });
+
+    load({
+      page: 1,
+      search,
+      status: statusFilter,
+    });
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
 
     const validationError = validateAssignmentTitle(form.title);
+
     if (validationError) {
       setError(validationError);
       return;
     }
 
     try {
-      await createAssignment({ ...form, status: "pending" });
-      setForm({ title: "", description: "", due_date: "" });
-      load({ page: 1, search, status: statusFilter });
+      await createAssignment({
+        ...form,
+        status: "pending",
+      });
+
+      setForm({
+        title: "",
+        description: "",
+        due_date: "",
+      });
+
+      load({
+        page: 1,
+        search,
+        status: statusFilter,
+      });
+
       showToast("Assignment created successfully");
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to create assignment";
+      const message =
+        err.response?.data?.message ||
+        "Failed to create assignment";
+
       setError(message);
       showToast(message, "error");
     }
@@ -63,10 +118,19 @@ const Assignments = () => {
   const handleDelete = async (id) => {
     try {
       await deleteAssignment(id);
-      load({ page, search, status: statusFilter });
+
+      load({
+        page,
+        search,
+        status: statusFilter,
+      });
+
       showToast("Assignment deleted successfully");
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to delete assignment";
+      const message =
+        err.response?.data?.message ||
+        "Failed to delete assignment";
+
       setError(message);
       showToast(message, "error");
     }
@@ -76,50 +140,98 @@ const Assignments = () => {
 
   return (
     <>
-      <h1 className="font-display text-2xl font-semibold text-ink">Assignments</h1>
-      <p className="mt-1 text-sm text-ink-muted">Track your coursework and deadlines.</p>
+      <h1 className="font-display text-2xl font-semibold text-ink">
+        Assignments
+      </h1>
 
-      <form onSubmit={handleCreate} className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-4">
+      <p className="mt-1 text-sm text-ink-muted">
+        Track your coursework and deadlines.
+      </p>
+
+      <form
+        onSubmit={handleCreate}
+        className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-4"
+      >
         <Input
           placeholder="Title"
           value={form.title}
           onChange={handleTitleChange}
           className="sm:col-span-2"
         />
+
         <Input
           placeholder="Due date (e.g. 2026-08-01)"
           value={form.due_date}
-          onChange={(e) => setForm({ ...form, due_date: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              due_date: e.target.value,
+            })
+          }
         />
-        <Button type="submit">Add assignment</Button>
+
+        <Button type="submit">
+          Add assignment
+        </Button>
       </form>
 
-      <form onSubmit={handleFilterSubmit} className="mt-4 flex flex-wrap gap-3">
+      <form
+        onSubmit={handleFilterSubmit}
+        className="mt-4 flex flex-wrap gap-3"
+      >
         <Input
           placeholder="Search assignments..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1"
         />
+
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-primary focus:outline-none"
         >
-          {statusOptions.map((s) => (
-            <option key={s} value={s}>
-              {s ? s : "All statuses"}
+          {statusOptions.map((status) => (
+            <option
+              key={status}
+              value={status}
+            >
+              {status || "All statuses"}
             </option>
           ))}
         </select>
-        <Button type="submit" variant="outline">Search</Button>
+
+        <Button
+          type="submit"
+          variant="outline"
+        >
+          Search
+        </Button>
       </form>
 
-      {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+      {error && (
+        <p className="mt-4 text-sm text-danger">
+          {error}
+        </p>
+      )}
 
       <div className="mt-6 space-y-3">
         {loading ? (
-          <p className="text-sm text-ink-muted">Loading assignments...</p>
+          <>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Card
+                key={index}
+                className="flex items-center justify-between"
+              >
+                <Skeleton className="h-5 w-48" />
+
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                  <Skeleton className="h-8 w-16 rounded-md" />
+                </div>
+              </Card>
+            ))}
+          </>
         ) : assignments.length === 0 ? (
           isFiltering ? (
             <EmptyState
@@ -133,24 +245,40 @@ const Assignments = () => {
             />
           )
         ) : (
-          assignments.map((a) => (
-            <Card key={a.id} className="flex items-center justify-between">
+          assignments.map((assignment) => (
+            <Card
+              key={assignment.id}
+              hover
+              className="flex items-center justify-between"
+            >
               <div>
                 <Link
-                  to={`/assignments/${a.id}`}
+                  to={`/assignments/${assignment.id}`}
                   className="font-medium text-ink hover:text-primary hover:underline"
                 >
-                  {a.title}
+                  {assignment.title}
                 </Link>
               </div>
+
               <div className="flex items-center gap-3">
-                <Badge status={a.status} />
-                <button
-                  onClick={() => handleDelete(a.id)}
-                  className="text-xs font-medium text-danger hover:underline"
+                <Badge
+                  variant={
+                    badgeVariantMap[assignment.status] ||
+                    "default"
+                  }
+                >
+                  {assignment.status}
+                </Badge>
+
+                <Button
+                  variant="dangerGhost"
+                  size="sm"
+                  onClick={() =>
+                    handleDelete(assignment.id)
+                  }
                 >
                   Delete
-                </button>
+                </Button>
               </div>
             </Card>
           ))
@@ -160,7 +288,13 @@ const Assignments = () => {
       <Pagination
         page={page}
         pages={pages}
-        onPageChange={(p) => load({ page: p, search, status: statusFilter })}
+        onPageChange={(p) =>
+          load({
+            page: p,
+            search,
+            status: statusFilter,
+          })
+        }
       />
     </>
   );

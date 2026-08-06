@@ -1,50 +1,173 @@
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import {
+  LayoutDashboard,
+  FolderKanban,
+  ClipboardList,
+  FileText,
+  Brain,
+  CalendarDays,
+  NotebookPen,
+  BarChart3,
+  Lock,
+} from "lucide-react";
 
-const navItems = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/projects", label: "Projects" },
-  { to: "/assignments", label: "Assignments" },
-  { to: "/files", label: "Files" },
+import { useAuth } from "../hooks/useAuth";
+import Button from "./Button";
+
+const mainNavItems = [
+  {
+    to: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    to: "/projects",
+    label: "Projects",
+    icon: FolderKanban,
+  },
+  {
+    to: "/assignments",
+    label: "Assignments",
+    icon: ClipboardList,
+  },
+  {
+    to: "/files",
+    label: "Files",
+    icon: FileText,
+  },
+];
+
+const futureNavItems = [
+  {
+    label: "AI Assistant",
+    icon: Brain,
+  },
+  {
+    label: "Calendar",
+    icon: CalendarDays,
+  },
+  {
+    label: "Notes",
+    icon: NotebookPen,
+  },
+  {
+    label: "Analytics",
+    icon: BarChart3,
+  },
 ];
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
 
   return (
-    <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-border bg-surface">
-      <div className="border-b border-border px-5 py-5">
-        <span className="font-display text-lg font-semibold text-primary">
+    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface">
+      {/* Brand */}
+
+      <div className="border-b border-border px-6 py-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
+          Academic OS
+        </p>
+
+        <h1 className="mt-1 font-display text-2xl font-semibold text-primary">
           StudentOS
-        </span>
+        </h1>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-accent-soft text-primary"
-                  : "text-ink-muted hover:bg-paper hover:text-ink"
-              }`
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
+      {/* Main Navigation */}
+
+      <nav className="flex-1 overflow-y-auto px-4 py-6">
+        <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+          Workspace
+        </p>
+
+        <div className="space-y-1">
+          {mainNavItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `
+                    flex items-center gap-3
+                    rounded-md
+                    px-3 py-2.5
+                    text-sm font-medium
+                    transition-all duration-150
+
+                    ${
+                      isActive
+                        ? "bg-accent-soft text-primary"
+                        : "text-ink-muted hover:bg-paper hover:text-ink"
+                    }
+                  `
+                }
+              >
+                <Icon size={18} strokeWidth={1.75} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+
+        {/* Future Modules */}
+
+        <div className="mt-10">
+          <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+            Coming Soon
+          </p>
+
+          <div className="space-y-1">
+            {futureNavItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.label}
+                  className="
+                    flex items-center justify-between
+                    rounded-md
+                    px-3 py-2.5
+                    text-sm
+                    text-ink-muted
+                    opacity-60
+                    cursor-not-allowed
+                    select-none
+                  "
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon size={18} strokeWidth={1.75} />
+                    <span>{item.label}</span>
+                  </div>
+
+                  <Lock size={14} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </nav>
 
-      <div className="border-t border-border px-4 py-4">
-        <p className="truncate text-sm font-medium text-ink">{user?.username}</p>
-        <button
+      {/* User */}
+
+      <div className="border-t border-border p-5">
+        <p className="text-xs uppercase tracking-wide text-ink-muted">
+          Signed in as
+        </p>
+
+        <p className="mt-1 truncate font-medium text-ink">
+          {user?.username}
+        </p>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-4 w-full justify-start"
           onClick={logout}
-          className="mt-2 text-xs font-medium text-ink-muted hover:text-danger"
         >
           Log out
-        </button>
+        </Button>
       </div>
     </aside>
   );

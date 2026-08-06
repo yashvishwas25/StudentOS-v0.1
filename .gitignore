@@ -1,3 +1,6 @@
+# -------------------------
+# Python
+# -------------------------
 __pycache__/
 *.pyc
 .env
@@ -6,3 +9,25 @@ venv/
 instance/
 logs/
 backend/uploads/
+
+# -------------------------
+# Node / Frontend
+# -------------------------
+node_modules/
+dist/
+dist-ssr/
+
+# Local environment files
+*.local
+
+# -------------------------
+# Editor / IDE
+# -------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# -------------------------
+# Operating System
+# -------------------------
+.DS_Store

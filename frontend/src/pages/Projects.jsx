@@ -5,14 +5,27 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
+import Skeleton from "../components/Skeleton";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useToast } from "../hooks/useToast";
-import { getProjects, createProject, deleteProject } from "../api/projects";
+import {
+  getProjects,
+  createProject,
+  deleteProject,
+} from "../api/projects";
 import { validateProjectName } from "../utils/validators";
 
 const Projects = () => {
-  const { items: projects, page, pages, loading, error, setError, load } =
-    usePaginatedResource(getProjects);
+  const {
+    items: projects,
+    page,
+    pages,
+    loading,
+    error,
+    setError,
+    load,
+  } = usePaginatedResource(getProjects);
+
   const { showToast } = useToast();
 
   const [search, setSearch] = useState("");
@@ -26,19 +39,25 @@ const Projects = () => {
 
   const handleNameChange = (e) => {
     setNewName(e.target.value);
+
     if (error) setError("");
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setActiveSearch(search);
-    load({ page: 1, search });
+
+    load({
+      page: 1,
+      search,
+    });
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
 
     const validationError = validateProjectName(newName);
+
     if (validationError) {
       setError(validationError);
       return;
@@ -46,11 +65,20 @@ const Projects = () => {
 
     try {
       await createProject(newName.trim());
+
       setNewName("");
-      load({ page: 1, search });
+
+      load({
+        page: 1,
+        search,
+      });
+
       showToast("Project created successfully");
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to create project";
+      const message =
+        err.response?.data?.message ||
+        "Failed to create project";
+
       setError(message);
       showToast(message, "error");
     }
@@ -59,10 +87,18 @@ const Projects = () => {
   const handleDelete = async (id) => {
     try {
       await deleteProject(id);
-      load({ page, search });
+
+      load({
+        page,
+        search,
+      });
+
       showToast("Project deleted successfully");
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to delete project";
+      const message =
+        err.response?.data?.message ||
+        "Failed to delete project";
+
       setError(message);
       showToast(message, "error");
     }
@@ -70,34 +106,65 @@ const Projects = () => {
 
   return (
     <>
-      <h1 className="font-display text-2xl font-semibold text-ink">Projects</h1>
-      <p className="mt-1 text-sm text-ink-muted">Organize and track your academic projects.</p>
+      <h1 className="font-display text-2xl font-semibold text-ink">
+        Projects
+      </h1>
 
-      <form onSubmit={handleCreate} className="mt-6 flex gap-3">
+      <p className="mt-1 text-sm text-ink-muted">
+        Organize and track your academic projects.
+      </p>
+
+      <form
+        onSubmit={handleCreate}
+        className="mt-6 flex gap-3"
+      >
         <Input
           placeholder="New project name"
           value={newName}
           onChange={handleNameChange}
           className="flex-1"
         />
-        <Button type="submit">Add project</Button>
+
+        <Button type="submit">
+          Add project
+        </Button>
       </form>
 
-      <form onSubmit={handleSearchSubmit} className="mt-4 flex gap-3">
+      <form
+        onSubmit={handleSearchSubmit}
+        className="mt-4 flex gap-3"
+      >
         <Input
           placeholder="Search projects..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1"
         />
-        <Button type="submit" variant="outline">Search</Button>
+
+        <Button
+          type="submit"
+          variant="outline"
+        >
+          Search
+        </Button>
       </form>
 
-      {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+      {error && (
+        <p className="mt-4 text-sm text-danger">
+          {error}
+        </p>
+      )}
 
       <div className="mt-6">
         {loading ? (
-          <p className="text-sm text-ink-muted">Loading projects...</p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index}>
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="mt-4 h-4 w-1/2" />
+              </Card>
+            ))}
+          </div>
         ) : projects.length === 0 ? (
           activeSearch ? (
             <EmptyState
@@ -113,26 +180,41 @@ const Projects = () => {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
-              <Card key={project.id} className="flex items-center justify-between">
+              <Card
+                key={project.id}
+                hover
+                className="flex items-center justify-between"
+              >
                 <Link
                   to={`/projects/${project.id}`}
                   className="font-medium text-ink hover:text-primary hover:underline"
                 >
                   {project.name}
                 </Link>
-                <button
+
+                <Button
+                  variant="dangerGhost"
+                  size="sm"
                   onClick={() => handleDelete(project.id)}
-                  className="text-xs font-medium text-danger hover:underline"
                 >
                   Delete
-                </button>
+                </Button>
               </Card>
             ))}
           </div>
         )}
       </div>
 
-      <Pagination page={page} pages={pages} onPageChange={(p) => load({ page: p, search })} />
+      <Pagination
+        page={page}
+        pages={pages}
+        onPageChange={(p) =>
+          load({
+            page: p,
+            search,
+          })
+        }
+      />
     </>
   );
 };

@@ -9,13 +9,22 @@ import { useToast } from "../hooks/useToast";
 import { getFiles, uploadFile, deleteFile } from "../api/files";
 
 const Files = () => {
-  const { items: files, page, pages, loading, error, setError, load } =
-    usePaginatedResource(getFiles);
+  const {
+    items: files,
+    page,
+    pages,
+    loading,
+    error,
+    setError,
+    load,
+  } = usePaginatedResource(getFiles);
+
   const { showToast } = useToast();
 
   const [search, setSearch] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [uploading, setUploading] = useState(false);
+
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -26,11 +35,16 @@ const Files = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setActiveSearch(search);
-    load({ page: 1, search });
+
+    load({
+      page: 1,
+      search,
+    });
   };
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
     setUploading(true);
@@ -38,25 +52,46 @@ const Files = () => {
 
     try {
       await uploadFile(file);
-      load({ page: 1, search });
+
+      setActiveSearch("");
+
+      load({
+        page: 1,
+        search,
+      });
+
       showToast("File uploaded successfully");
     } catch (err) {
-      const message = err.response?.data?.message || "Upload failed";
+      const message =
+        err.response?.data?.message ||
+        "Upload failed";
+
       setError(message);
       showToast(message, "error");
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteFile(id);
-      load({ page, search });
+
+      load({
+        page,
+        search,
+      });
+
       showToast("File deleted successfully");
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to delete file";
+      const message =
+        err.response?.data?.message ||
+        "Failed to delete file";
+
       setError(message);
       showToast(message, "error");
     }
@@ -64,8 +99,13 @@ const Files = () => {
 
   return (
     <>
-      <h1 className="font-display text-2xl font-semibold text-ink">Files</h1>
-      <p className="mt-1 text-sm text-ink-muted">Access your files from any device.</p>
+      <h1 className="font-display text-2xl font-semibold text-ink">
+        Files
+      </h1>
+
+      <p className="mt-1 text-sm text-ink-muted">
+        Access your files from any device.
+      </p>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <input
@@ -75,26 +115,45 @@ const Files = () => {
           className="hidden"
           id="file-upload"
         />
-        <Button onClick={() => fileInputRef.current?.click()} loading={uploading}>
+
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          loading={uploading}
+        >
           Upload file
         </Button>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="mt-4 flex gap-3">
+      <form
+        onSubmit={handleSearchSubmit}
+        className="mt-4 flex gap-3"
+      >
         <Input
           placeholder="Search files..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1"
         />
-        <Button type="submit" variant="outline">Search</Button>
+
+        <Button
+          type="submit"
+          variant="outline"
+        >
+          Search
+        </Button>
       </form>
 
-      {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+      {error && (
+        <p className="mt-4 text-sm text-danger">
+          {error}
+        </p>
+      )}
 
       <div className="mt-6">
         {loading ? (
-          <p className="text-sm text-ink-muted">Loading files...</p>
+          <p className="text-sm text-ink-muted">
+            Loading files...
+          </p>
         ) : files.length === 0 ? (
           activeSearch ? (
             <EmptyState
@@ -110,7 +169,10 @@ const Files = () => {
         ) : (
           <div className="divide-y divide-border rounded-lg border border-border bg-surface">
             {files.map((file) => (
-              <div key={file.id} className="flex items-center justify-between px-4 py-3">
+              <div
+                key={file.id}
+                className="flex items-center justify-between px-4 py-3"
+              >
                 <div>
                   <Link
                     to={`/files/${file.id}`}
@@ -118,21 +180,35 @@ const Files = () => {
                   >
                     {file.filename}
                   </Link>
-                  <p className="text-xs uppercase text-ink-muted">{file.file_type}</p>
+
+                  <p className="text-xs uppercase text-ink-muted">
+                    {file.file_type}
+                  </p>
                 </div>
-                <button
+
+                <Button
+                  variant="dangerGhost"
+                  size="sm"
                   onClick={() => handleDelete(file.id)}
-                  className="text-xs font-medium text-danger hover:underline"
                 >
                   Delete
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <Pagination page={page} pages={pages} onPageChange={(p) => load({ page: p, search })} />
+      <Pagination
+        page={page}
+        pages={pages}
+        onPageChange={(p) =>
+          load({
+            page: p,
+            search,
+          })
+        }
+      />
     </>
   );
 };

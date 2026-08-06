@@ -1,13 +1,30 @@
 const variants = {
-  primary: "bg-primary text-white hover:bg-primary-hover",
-  outline: "border border-border text-ink hover:bg-surface",
-  danger: "bg-danger text-white hover:opacity-90",
-  ghost: "text-ink-muted hover:text-ink",
+  primary:
+    "bg-primary text-white hover:bg-primary-hover focus-visible:bg-primary-hover",
+
+  outline:
+    "border border-border bg-surface text-ink hover:bg-paper",
+
+  danger:
+    "bg-danger text-white hover:opacity-90",
+
+  dangerGhost:
+    "text-danger hover:bg-danger/10",
+
+  ghost:
+    "text-ink-muted hover:bg-paper hover:text-ink",
+};
+
+const sizes = {
+  sm: "px-3 py-1.5 text-xs",
+  md: "px-4 py-2 text-sm",
+  lg: "px-5 py-2.5 text-base",
 };
 
 const Button = ({
   children,
   variant = "primary",
+  size = "md",
   type = "button",
   disabled = false,
   loading = false,
@@ -20,7 +37,21 @@ const Button = ({
       type={type}
       disabled={disabled || loading}
       onClick={onClick}
-      className={`inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`
+        inline-flex items-center justify-center gap-2
+        rounded-md
+        font-medium
+        whitespace-nowrap
+        transition-all duration-150 ease-out
+        shadow-sm
+        hover:shadow-md
+        active:scale-[0.98]
+        disabled:pointer-events-none
+        disabled:opacity-40
+        ${sizes[size]}
+        ${variants[variant]}
+        ${className}
+      `}
       {...props}
     >
       {loading ? "Please wait..." : children}
