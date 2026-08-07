@@ -4,9 +4,14 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useToast } from "../hooks/useToast";
-import { getFiles, uploadFile, deleteFile } from "../api/files";
+import {
+  getFiles,
+  uploadFile,
+  deleteFile,
+} from "../api/files";
 
 const Files = () => {
   const {
@@ -25,15 +30,20 @@ const Files = () => {
   const [activeSearch, setActiveSearch] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     load({ page: 1, search });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+
     setActiveSearch(search);
 
     load({
@@ -77,12 +87,23 @@ const Files = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    setDeleting(true);
+
     try {
-      await deleteFile(id);
+      await deleteFile(deleteId);
+
+      setDeleteId(null);
+
+      const nextPage =
+        page > 1 && files.length === 1
+          ? page - 1
+          : page;
 
       load({
-        page,
+        page: nextPage,
         search,
       });
 
@@ -94,12 +115,14 @@ const Files = () => {
 
       setError(message);
       showToast(message, "error");
+    } finally {
+      setDeleting(false);
     }
   };
 
   return (
     <>
-      <h1 className="font-display text-2xl font-semibold text-ink">
+      <h1 className="font-display text-3xl font-semibold text-ink">
         Files
       </h1>
 
@@ -117,7 +140,9 @@ const Files = () => {
         />
 
         <Button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() =>
+            fileInputRef.current?.click()
+          }
           loading={uploading}
         >
           Upload file
@@ -189,7 +214,9 @@ const Files = () => {
                 <Button
                   variant="dangerGhost"
                   size="sm"
-                  onClick={() => handleDelete(file.id)}
+                  onClick={() =>
+                    setDeleteId(file.id)
+                  }
                 >
                   Delete
                 </Button>
@@ -208,6 +235,21 @@ const Files = () => {
             search,
           })
         }
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteId)}
+        title="Delete file?"
+        message="This file will be permanently deleted. This action cannot be undone."
+        confirmLabel="Delete File"
+        cancelLabel="Cancel"
+        loading={deleting}
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteId(null);
+          }
+        }}
+        onConfirm={handleDelete}
       />
     </>
   );

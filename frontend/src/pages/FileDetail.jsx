@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../hooks/useToast";
 import { getFile, deleteFile } from "../api/files";
 
@@ -13,6 +14,8 @@ const FileDetail = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] =
+    useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -56,6 +59,7 @@ const FileDetail = () => {
       showToast(message, "error");
     } finally {
       setDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -113,7 +117,7 @@ const FileDetail = () => {
                 File Type
               </p>
 
-              <p className="text-sm text-ink-muted uppercase">
+              <p className="text-sm uppercase text-ink-muted">
                 {file.file_type}
               </p>
             </div>
@@ -132,8 +136,10 @@ const FileDetail = () => {
               <Button
                 type="button"
                 variant="dangerGhost"
-                loading={deleting}
-                onClick={handleDelete}
+                onClick={() =>
+                  setDeleteDialogOpen(true)
+                }
+                disabled={deleting}
               >
                 Delete File
               </Button>
@@ -141,6 +147,21 @@ const FileDetail = () => {
           </div>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete file?"
+        message="This file will be permanently deleted. This action cannot be undone."
+        confirmLabel="Delete File"
+        cancelLabel="Cancel"
+        loading={deleting}
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteDialogOpen(false);
+          }
+        }}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

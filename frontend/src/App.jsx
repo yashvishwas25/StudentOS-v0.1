@@ -36,7 +36,10 @@ function App() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
               <Route path="/assignments" element={<Assignments />} />
-              <Route path="/assignments/:id" element={<AssignmentDetail />} />
+              <Route
+                path="/assignments/:id"
+                element={<AssignmentDetail />}
+              />
               <Route path="/files" element={<Files />} />
               <Route path="/files/:id" element={<FileDetail />} />
             </Route>

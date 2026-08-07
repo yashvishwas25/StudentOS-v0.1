@@ -6,7 +6,7 @@ import Input from "../components/Input";
 import Badge from "../components/Badge";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
-import Skeleton from "../components/Skeleton";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useToast } from "../hooks/useToast";
 import {
@@ -16,7 +16,12 @@ import {
 } from "../api/assignments";
 import { validateAssignmentTitle } from "../utils/validators";
 
-const statusOptions = ["", "pending", "in-progress", "completed"];
+const statusOptions = [
+  "",
+  "pending",
+  "in-progress",
+  "completed",
+];
 
 const badgeVariantMap = {
   pending: "warning",
@@ -40,11 +45,15 @@ const Assignments = () => {
   const [search, setSearch] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+
   const [form, setForm] = useState({
     title: "",
     description: "",
     due_date: "",
   });
+
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     load({
@@ -52,6 +61,7 @@ const Assignments = () => {
       search,
       status: statusFilter,
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
@@ -61,7 +71,9 @@ const Assignments = () => {
       title: e.target.value,
     });
 
-    if (error) setError("");
+    if (error) {
+      setError("");
+    }
   };
 
   const handleFilterSubmit = (e) => {
@@ -79,7 +91,8 @@ const Assignments = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
 
-    const validationError = validateAssignmentTitle(form.title);
+    const validationError =
+      validateAssignmentTitle(form.title);
 
     if (validationError) {
       setError(validationError);
@@ -115,12 +128,23 @@ const Assignments = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    setDeleting(true);
+
     try {
-      await deleteAssignment(id);
+      await deleteAssignment(deleteId);
+
+      setDeleteId(null);
+
+      const nextPage =
+        page > 1 && assignments.length === 1
+          ? page - 1
+          : page;
 
       load({
-        page,
+        page: nextPage,
         search,
         status: statusFilter,
       });
@@ -133,14 +157,17 @@ const Assignments = () => {
 
       setError(message);
       showToast(message, "error");
+    } finally {
+      setDeleting(false);
     }
   };
 
-  const isFiltering = activeSearch || statusFilter;
+  const isFiltering =
+    activeSearch || statusFilter;
 
   return (
     <>
-      <h1 className="font-display text-2xl font-semibold text-ink">
+      <h1 className="font-display text-3xl font-semibold text-ink">
         Assignments
       </h1>
 
@@ -188,7 +215,9 @@ const Assignments = () => {
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) =>
+            setStatusFilter(e.target.value)
+          }
           className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-primary focus:outline-none"
         >
           {statusOptions.map((status) => (
@@ -217,21 +246,9 @@ const Assignments = () => {
 
       <div className="mt-6 space-y-3">
         {loading ? (
-          <>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <Card
-                key={index}
-                className="flex items-center justify-between"
-              >
-                <Skeleton className="h-5 w-48" />
-
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-6 w-24 rounded-full" />
-                  <Skeleton className="h-8 w-16 rounded-md" />
-                </div>
-              </Card>
-            ))}
-          </>
+          <p className="text-sm text-ink-muted">
+            Loading assignments...
+          </p>
         ) : assignments.length === 0 ? (
           isFiltering ? (
             <EmptyState
@@ -248,7 +265,6 @@ const Assignments = () => {
           assignments.map((assignment) => (
             <Card
               key={assignment.id}
-              hover
               className="flex items-center justify-between"
             >
               <div>
@@ -263,8 +279,9 @@ const Assignments = () => {
               <div className="flex items-center gap-3">
                 <Badge
                   variant={
-                    badgeVariantMap[assignment.status] ||
-                    "default"
+                    badgeVariantMap[
+                      assignment.status
+                    ] || "default"
                   }
                 >
                   {assignment.status}
@@ -274,7 +291,7 @@ const Assignments = () => {
                   variant="dangerGhost"
                   size="sm"
                   onClick={() =>
-                    handleDelete(assignment.id)
+                    setDeleteId(assignment.id)
                   }
                 >
                   Delete
@@ -295,6 +312,21 @@ const Assignments = () => {
             status: statusFilter,
           })
         }
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteId)}
+        title="Delete assignment?"
+        message="This assignment will be permanently deleted. This action cannot be undone."
+        confirmLabel="Delete Assignment"
+        cancelLabel="Cancel"
+        loading={deleting}
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteId(null);
+          }
+        }}
+        onConfirm={handleDelete}
       />
     </>
   );

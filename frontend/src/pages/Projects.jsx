@@ -5,7 +5,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
-import Skeleton from "../components/Skeleton";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useToast } from "../hooks/useToast";
 import {
@@ -32,19 +32,26 @@ const Projects = () => {
   const [activeSearch, setActiveSearch] = useState("");
   const [newName, setNewName] = useState("");
 
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     load({ page: 1, search });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleNameChange = (e) => {
     setNewName(e.target.value);
 
-    if (error) setError("");
+    if (error) {
+      setError("");
+    }
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+
     setActiveSearch(search);
 
     load({
@@ -84,12 +91,23 @@ const Projects = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    setDeleting(true);
+
     try {
-      await deleteProject(id);
+      await deleteProject(deleteId);
+
+      setDeleteId(null);
+
+      const nextPage =
+        page > 1 && projects.length === 1
+          ? page - 1
+          : page;
 
       load({
-        page,
+        page: nextPage,
         search,
       });
 
@@ -101,12 +119,14 @@ const Projects = () => {
 
       setError(message);
       showToast(message, "error");
+    } finally {
+      setDeleting(false);
     }
   };
 
   return (
     <>
-      <h1 className="font-display text-2xl font-semibold text-ink">
+      <h1 className="font-display text-3xl font-semibold text-ink">
         Projects
       </h1>
 
@@ -157,14 +177,9 @@ const Projects = () => {
 
       <div className="mt-6">
         {loading ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index}>
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="mt-4 h-4 w-1/2" />
-              </Card>
-            ))}
-          </div>
+          <p className="text-sm text-ink-muted">
+            Loading projects...
+          </p>
         ) : projects.length === 0 ? (
           activeSearch ? (
             <EmptyState
@@ -182,7 +197,6 @@ const Projects = () => {
             {projects.map((project) => (
               <Card
                 key={project.id}
-                hover
                 className="flex items-center justify-between"
               >
                 <Link
@@ -195,7 +209,7 @@ const Projects = () => {
                 <Button
                   variant="dangerGhost"
                   size="sm"
-                  onClick={() => handleDelete(project.id)}
+                  onClick={() => setDeleteId(project.id)}
                 >
                   Delete
                 </Button>
@@ -214,6 +228,21 @@ const Projects = () => {
             search,
           })
         }
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteId)}
+        title="Delete project?"
+        message="This project will be permanently deleted. This action cannot be undone."
+        confirmLabel="Delete Project"
+        cancelLabel="Cancel"
+        loading={deleting}
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteId(null);
+          }
+        }}
+        onConfirm={handleDelete}
       />
     </>
   );

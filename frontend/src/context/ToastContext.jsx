@@ -1,5 +1,5 @@
 import { createContext, useCallback, useState } from "react";
-import ToastContainer from "../components/Toast";
+import Toast from "../components/Toast";
 
 export const ToastContext = createContext(null);
 
@@ -9,13 +9,21 @@ export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
   const removeToast = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
   const showToast = useCallback(
     (message, type = "success") => {
       const id = ++idCounter;
-      setToasts((prev) => [...prev, { id, message, type }]);
+
+      setToasts((prev) => [
+        ...prev,
+        {
+          id,
+          message,
+          type,
+        },
+      ]);
 
       setTimeout(() => {
         removeToast(id);
@@ -27,7 +35,17 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+      <div className="pointer-events-none fixed right-4 top-4 z-50 flex w-full max-w-sm flex-col gap-3">
+        {toasts.map((toast) => (
+          <div key={toast.id} className="pointer-events-auto">
+            <Toast
+              message={toast.message}
+              type={toast.type}
+            />
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 };

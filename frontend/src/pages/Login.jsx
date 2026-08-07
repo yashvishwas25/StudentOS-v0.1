@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { useAuth } from "../hooks/useAuth";
-import { validateUsername, validatePassword } from "../utils/validators";
+import { useToast } from "../hooks/useToast";
+import {
+  validateUsername,
+  validatePassword,
+} from "../utils/validators";
 
 const Login = () => {
   const { login } = useAuth();
+  const { showToast } = useToast();
+
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -15,15 +26,31 @@ const Login = () => {
   const successMessage = location.state?.message;
   const sessionExpired = searchParams.get("expired") === "1";
 
-  const [form, setForm] = useState({ username: "", password: "" });
-  const [fieldErrors, setFieldErrors] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
+
+  const [fieldErrors, setFieldErrors] = useState({
+    username: "",
+    password: "",
+  });
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-    setFieldErrors({ ...fieldErrors, [name]: "" });
+
+    setForm({
+      ...form,
+      [name]: value,
+    });
+
+    setFieldErrors({
+      ...fieldErrors,
+      [name]: "",
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -34,7 +61,11 @@ const Login = () => {
     const passwordError = validatePassword(form.password);
 
     if (usernameError || passwordError) {
-      setFieldErrors({ username: usernameError, password: passwordError });
+      setFieldErrors({
+        username: usernameError,
+        password: passwordError,
+      });
+
       return;
     }
 
@@ -42,9 +73,15 @@ const Login = () => {
 
     try {
       await login(form.username, form.password);
+
+      showToast("Logged in successfully");
+
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Try again.");
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -52,7 +89,9 @@ const Login = () => {
 
   return (
     <AuthLayout>
-      <h2 className="mb-5 text-center text-lg font-semibold text-ink">Log in</h2>
+      <h1 className="font-display text-2xl font-semibold text-ink">
+        Log in
+      </h1>
 
       {successMessage && (
         <p className="mb-4 rounded-md bg-success/10 px-3 py-2 text-sm text-success">
@@ -66,7 +105,10 @@ const Login = () => {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4"
+      >
         <Input
           id="username"
           name="username"
@@ -76,6 +118,7 @@ const Login = () => {
           error={fieldErrors.username}
           required
         />
+
         <Input
           id="password"
           name="password"
@@ -87,16 +130,27 @@ const Login = () => {
           required
         />
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && (
+          <p className="text-sm text-danger">
+            {error}
+          </p>
+        )}
 
-        <Button type="submit" loading={loading} className="w-full">
+        <Button
+          type="submit"
+          loading={loading}
+          className="w-full"
+        >
           Log in
         </Button>
       </form>
 
       <p className="mt-5 text-center text-sm text-ink-muted">
         New to StudentOS?{" "}
-        <Link to="/register" className="font-medium text-primary hover:underline">
+        <Link
+          to="/register"
+          className="font-medium text-primary hover:underline"
+        >
           Create an account
         </Link>
       </p>

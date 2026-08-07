@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast";
 import Button from "./Button";
 
 const mainNavItems = [
@@ -58,9 +59,15 @@ const futureNavItems = [
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
+
+  const handleLogout = () => {
+    logout();
+    showToast("Logged out successfully");
+  };
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface">
+    <aside className="flex min-h-screen w-64 flex-col border-r border-border bg-surface">
       {/* Brand */}
 
       <div className="border-b border-border px-6 py-6">
@@ -164,7 +171,7 @@ const Sidebar = () => {
           variant="ghost"
           size="sm"
           className="mt-4 w-full justify-start"
-          onClick={logout}
+          onClick={handleLogout}
         >
           Log out
         </Button>
